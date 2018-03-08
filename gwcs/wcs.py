@@ -1,6 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import functools
-import warnings
 
 import numpy as np
 from astropy.modeling.core import Model
@@ -16,7 +15,6 @@ __all__ = ['WCS']
 
 
 class WCS:
-
     """
     Basic WCS class.
 
@@ -259,10 +257,9 @@ class WCS:
             raise ValueError("Type of output unrecognized {0}".format(output))
         return result
 
-
     def invert(self, *args, **kwargs):
         """
-        Invert coordnates.
+        Invert coordinates.
 
         The analytical inverse of the forward transform is used, if available.
         If not an iterative method is used.
@@ -280,7 +277,7 @@ class WCS:
             Output value for inputs outside the bounding_box (default is np.nan).
         """
         if not utils.isnumerical(args[0]):
-            args = utils._get_values(self.unit, *args)
+            args = self.output_frame.coordinate_to_quantity(*args)
 
         output = kwargs.pop('output', None)
         if 'with_bounding_box' not in kwargs:
@@ -293,7 +290,7 @@ class WCS:
         except (NotImplementedError, KeyError):
             result = self._invert(*args, **kwargs)
 
-        if output == 'numericals_plus':
+        if output == 'numericals_plus' and self.input_frame:
             if self.input_frame.naxes == 1:
                 return self.input_frame.coordinates(result)
             else:
