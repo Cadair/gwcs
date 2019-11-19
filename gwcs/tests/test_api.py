@@ -48,7 +48,7 @@ xarr, yarr = np.ones((3, 4)), np.ones((3, 4)) + 1
 
 fixture_names = ['gwcs_2d_spatial_shift', 'gwcs_1d_freq', 'gwcs_3d_spatial_wave']
 fixture_wcs_ndim_types_units = pytest.mark.parametrize("wcs_ndim_types_units", fixture_names, indirect=True)
-all_wcses_names = fixture_names + ['gwcs_3d_identity_units']
+all_wcses_names = fixture_names + ['gwcs_3d_identity_units', 'gwcs_stokes_lookup']
 fixture_all_wcses = pytest.mark.parametrize("wcsobj", all_wcses_names, indirect=True)
 
 
@@ -192,6 +192,9 @@ def _compare_frame_output(wc1, wc2):
     elif isinstance(wc1, u.Quantity):
         assert u.allclose(wc1, wc2)
 
+    elif isinstance(wc1, str):
+        assert wc1 == wc2
+
     else:
         assert False, f"Can't Compare {type(wc1)}"
 
@@ -200,7 +203,7 @@ def _compare_frame_output(wc1, wc2):
 def test_high_level_wrapper(wcsobj):
     hlvl = HighLevelWCSWrapper(wcsobj)
 
-    pixel_input = [10] * wcsobj.pixel_n_dim
+    pixel_input = [3] * wcsobj.pixel_n_dim
 
     # If the model expects units we have to pass in units
     if wcsobj.forward_transform.uses_quantity:
@@ -216,6 +219,28 @@ def test_high_level_wrapper(wcsobj):
             _compare_frame_output(w1, w2)
     else:
         _compare_frame_output(wc1, wc2)
+
+
+def test_stokes_wrapper(gwcs_stokes_lookup):
+    hlvl = HighLevelWCSWrapper(gwcs_stokes_lookup)
+
+    pixel_input = [0, 1, 2, 3]
+
+    out = hlvl.pixel_to_world(pixel_input*u.pix)
+
+    assert out == ['I', 'Q', 'U', 'V']
+
+
+    pixel_input = [-1, 4]
+
+    out = hlvl.pixel_to_world(pixel_input*u.pix)
+
+    assert np.isnan(out).all()
+
+
+    out = hlvl.pixel_to_world(1*u.pix)
+
+    assert out == 'Q'
 
 
 @wcs_objs
