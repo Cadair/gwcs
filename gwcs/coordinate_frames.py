@@ -608,30 +608,26 @@ class StokesProfile(str):
         return {v: k for k, v in cls.profiles.items()}
 
     @classmethod
-    def from_index(cls, *indexes):
-        out = []
+    def from_index(cls, indexes):
 
-        if len(indexes) == 1 and isiterable(indexes[0]):
-            indexes = indexes[0]
+        nans = np.isnan(indexes)
+        indexes = np.asanyarray(indexes, dtype=int)
+        out = np.empty_like(indexes, dtype=object)
 
-        for index in indexes:
-            if np.isnan(index):
-                out.append(index)
-                continue
+        out[nans] = np.nan
 
-            index = int(index)
+        for profile, index in cls.profiles.items():
+            out[indexes == index] = profile
 
-            if index not in cls.profiles.values():
-                raise ValueError(f"The profile index must be one of {cls.profiles.values()} not {index}")
-
-            out.append(cls(cls.index_profiles()[index]))
-
-        if len(out) == 1:
-            return out[0]
+        if out.size == 1 and not nans:
+            return StokesProfile(out)
+        elif nans.all():
+            return np.array(out, dtype=float)
         else:
             return out
 
     def __new__(cls, content):
+        content = str(content)
         if content not in cls.profiles.keys():
             raise ValueError(f"The profile name must be one of {cls.profiles.keys()} not {content}")
         return str.__new__(cls, content)
@@ -667,7 +663,7 @@ class StokesFrame(CoordinateFrame):
         return [('stokes', 0, 'value')]
 
     def coordinates(self, *args):
-        if hasattr(args[0], 'value'):
+        if isinstance(args[0], u.Quantity):
             arg = args[0].value
         else:
             arg = args[0]
