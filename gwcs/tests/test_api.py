@@ -55,6 +55,18 @@ all_wcses_names = fixture_names + ['gwcs_3d_identity_units', 'gwcs_stokes_lookup
 fixture_all_wcses = pytest.mark.parametrize("wcsobj", all_wcses_names, indirect=True)
 
 
+@fixture_all_wcses
+def test_lowlevel_types(wcsobj):
+    pytest.importorskip("typeguard")
+    try:
+        # Skip this on older versions of astropy where it dosen't exist.
+        from astropy.wcs.wcsapi.tests.utils import validate_low_level_wcs_types
+    except ImportError:
+        return
+
+    validate_low_level_wcs_types(wcsobj)
+
+
 @fixture_wcs_ndim_types_units
 def test_pixel_n_dim(wcs_ndim_types_units):
     wcsobj, ndims, *_ = wcs_ndim_types_units
