@@ -615,13 +615,26 @@ class StokesProfile(str):
         return {v: k for k, v in cls.profiles.items()}
 
     @classmethod
-    def from_index(cls, index):
-        if index not in cls.profiles.values():
-            raise ValueError(f"The profile index must be one of {cls.profiles.values()} not {index}")
+    def from_index(cls, indexes):
 
-        return cls(cls.index_profiles()[index])
+        nans = np.isnan(indexes)
+        indexes = np.asanyarray(indexes, dtype=int)
+        out = np.empty_like(indexes, dtype=object)
+
+        out[nans] = np.nan
+
+        for profile, index in cls.profiles.items():
+            out[indexes == index] = profile
+
+        if out.size == 1 and not nans:
+            return StokesProfile(out)
+        elif nans.all():
+            return np.array(out, dtype=float)
+        else:
+            return out
 
     def __new__(cls, content):
+        content = str(content)
         if content not in cls.profiles.keys():
             raise ValueError(f"The profile name must be one of {cls.profiles.keys()} not {content}")
         return str.__new__(cls, content)
@@ -649,23 +662,25 @@ class StokesFrame(CoordinateFrame):
         return {'stokes': (
             StokesProfile,
             (),
-            {})}
+            {},
+            StokesProfile.from_index)}
 
     @property
     def _world_axis_object_components(self):
         return [('stokes', 0, 'value')]
 
     def coordinates(self, *args):
-        if hasattr(args[0], 'value'):
+        if isinstance(args[0], u.Quantity):
             arg = args[0].value
         else:
             arg = args[0]
-        return StokesProfile.from_index(int(arg))
+
+        return StokesProfile.from_index(arg)
 
     def coordinate_to_quantity(self, *coords):
         if isinstance(coords[0], str):
             if coords[0] in StokesProfile.profiles.keys():
-                return StokesProfile.profiles[coords[0]] * u.pix
+                return StokesProfile.profiles[coords[0]] * u.one
         else:
             return coords[0]
 
