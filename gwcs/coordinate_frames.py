@@ -673,7 +673,7 @@ class StokesFrame(CoordinateFrame):
     def coordinate_to_quantity(self, *coords):
         if isinstance(coords[0], str):
             if coords[0] in StokesProfile.profiles.keys():
-                return StokesProfile.profiles[coords[0]] * u.pix
+                return StokesProfile.profiles[coords[0]] * u.one
         else:
             return coords[0]
 
