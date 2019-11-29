@@ -648,7 +648,8 @@ class StokesFrame(CoordinateFrame):
 
     def __init__(self, axes_order=(0,), name=None):
         super(StokesFrame, self).__init__(1, ["STOKES"], axes_order, name=name,
-                                          axes_names=("stokes",), unit=u.one)
+                                          axes_names=("stokes",), unit=u.one,
+                                          axis_physical_types="phys.polarization.stokes")
 
     @property
     def _world_axis_object_classes(self):
