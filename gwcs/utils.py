@@ -464,6 +464,8 @@ def isnumerical(val):
         isnum = False
     elif isinstance(val, (Time, TimeDelta)):
         isnum = False
+    elif isinstance(val, str):
+        isnum = False
     elif (isinstance(val, np.ndarray)
           and not np.issubdtype(val.dtype, np.floating)
           and not np.issubdtype(val.dtype, np.integer)):

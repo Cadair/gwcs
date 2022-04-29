@@ -15,6 +15,7 @@ from astropy.modeling import projections, fix_inputs
 from astropy.modeling.fitting import LinearLSQFitter
 import astropy.io.fits as fits
 from astropy.wcs.utils import celestial_frame_to_wcs, proj_plane_pixel_scales
+from astropy.utils import isiterable
 
 from .api import GWCSAPIMixin
 from . import coordinate_frames as cf
@@ -506,6 +507,8 @@ class WCS(GWCSAPIMixin):
             # remove iterative inverse-specific keyword arguments:
             akwargs = {k: v for k, v in kwargs.items() if k not in _ITER_INV_KWARGS}
             result = self.backward_transform(*args, **akwargs)
+            if not isiterable(result):
+                result = (result,)
         except (NotImplementedError, KeyError):
             result = self.numerical_inverse(*args, **kwargs, with_units=with_units)
 

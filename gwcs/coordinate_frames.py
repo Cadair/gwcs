@@ -773,7 +773,7 @@ class StokesFrame(CoordinateFrame):
     @property
     def _world_axis_object_classes(self):
         return {'stokes': (
-            StokesProfile,
+            str,
             (),
             {},
             StokesProfile.from_index)}

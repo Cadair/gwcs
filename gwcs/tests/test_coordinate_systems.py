@@ -290,6 +290,22 @@ def test_stokes_profile():
     assert (cf.StokesProfile.from_index(np.arange(-8, 4) * u.one) == np.array(['YX', 'XY', 'YY,', 'XX', 'LR', 'RL', 'LL', 'RR', 'I', 'Q', 'U', 'V'], dtype="U2")).all()
 
 
+def test_stokes_world_to_pixel():
+    forward_transform = m.Tabular1D(lookup_table=[0, 1, 2, 3], points=[0, 1, 2, 3]*u.pix)
+    pixel_frame = cf.CoordinateFrame(1, ["PIXEL"], (0,), unit=(u.pix,))
+    world_frame = cf.StokesFrame()
+    w = WCS(forward_transform=forward_transform, output_frame=world_frame, input_frame=pixel_frame)
+    pix = w.world_to_pixel(cf.StokesProfile("I"))
+    assert u.allclose(pix, 0)
+    pix = w.world_to_pixel("I")
+    assert u.allclose(pix, 0)
+
+    from astropy.wcs.wcsapi import HighLevelWCSWrapper
+
+    hw = HighLevelWCSWrapper(w)
+    hw.world_to_pixel(cf.StokesProfile("I"))
+    hw.world_to_pixel("I")
+
 @pytest.mark.parametrize('inp', [
     (211 * u.AA, 0 * u.s, 0 * u.one, 0 * u.one),
     (211 * u.AA, 0 * u.s, (0 * u.one, 0 * u.one)),
