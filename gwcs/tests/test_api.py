@@ -317,6 +317,13 @@ def test_stokes_wrapper(gwcs_stokes_lookup):
 
     assert out == 'Q'
 
+    pix = hlvl.world_to_pixel(cf.StokesProfile("I"))
+    assert pix == 0
+    pix = hlvl.world_to_pixel([cf.StokesProfile("I"), cf.StokesProfile("U")])
+    assert pix == 0
+    pix = hlvl.world_to_pixel("I")
+    assert pix == 0
+
 
 @wcs_objs
 def test_array_shape(wcsobj):

@@ -751,6 +751,7 @@ class StokesProfile(str):
             raise ValueError(f"The profile name must be one of {cls.profiles.keys()} not {content}")
         return str.__new__(cls, content)
 
+    @property
     def value(self):
         return self.profiles[self]
 
@@ -773,7 +774,7 @@ class StokesFrame(CoordinateFrame):
     @property
     def _world_axis_object_classes(self):
         return {'stokes': (
-            str,
+            StokesProfile,
             (),
             {},
             StokesProfile.from_index)}
